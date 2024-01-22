@@ -14,7 +14,7 @@ var querystring = require('querystring');
 var express = require('express');
 var Unblocker = require('unblocker');
 var Transform = require('stream').Transform;
-var youtube = require('unblocker/examples/youtube/youtube.js')
+var youtube = require('unblocker/examples/youtube/youtube.js');
 
 var app = express();
 
@@ -33,7 +33,7 @@ function addGa(html) {
             "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);",
             "})();",
             "</script>"
-            ].join("\n");
+        ].join("\n");
         html = html.replace("</body>", ga + "\n\n</body>");
     }
     return html;
@@ -41,7 +41,6 @@ function addGa(html) {
 
 function googleAnalyticsMiddleware(data) {
     if (data.contentType == 'text/html') {
-
         // https://nodejs.org/api/stream.html#stream_transform
         data.stream = data.stream.pipe(new Transform({
             decodeStrings: false,
@@ -57,9 +56,10 @@ var unblocker = new Unblocker({
     prefix: '/proxy/',
     requestMiddleware: [
         youtube.processRequest
+        // Add other request middleware if needed
     ],
     responseMiddleware: [
-        googleAnalyticsMiddleware
+        // Add response middleware if needed
     ]
 });
 
@@ -72,9 +72,9 @@ app.use('/', express.static(__dirname + '/public'));
 // this is for users who's form actually submitted due to JS being disabled or whatever
 app.get("/no-js", function(req, res) {
     // grab the "url" parameter from the querystring
-    var site = querystring.parse(url.parse(req.url).query).url;
+    var site = req.query.url; // Assuming the URL parameter is directly in the query
     // and redirect the user to /proxy/url
-    res.redirect(unblockerConfig.prefix + site);
+    res.redirect(unblocker.prefix + site);
 });
 
 const port = process.env.PORT || process.env.VCAP_APP_PORT || 8080;
